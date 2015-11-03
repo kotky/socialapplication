@@ -1,0 +1,17 @@
+{
+   "pid": 2055, 
+   "options": {
+      "reactor": null, 
+      "loglevel": "info", 
+      "logtofile": false, 
+      "logformat": "colour", 
+      "command": "start", 
+      "logdir": null, 
+      "config": "/home/kotarac/PycharmProjects/socialapplication/.crossbar/config.json", 
+      "cbdir": "/home/kotarac/PycharmProjects/socialapplication/.crossbar"
+   }, 
+   "argv": [
+      "/usr/local/bin/crossbar", 
+      "start"
+   ]
+}
