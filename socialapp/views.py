@@ -1,13 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, views
 from socialapp.models import SocialUser, Chats, ChatsUsers, ChatMessages, Posts, Likes
+from socialapp.forms import RegistrationFormUser, RegistrationFormSocialUser
 from django.db.models import Q
 from django.core.mail import send_mail
 from datetime import datetime, timedelta
 from crossbarhttp import *
-from forms import ImageUploadForm
 
 def index(request):
     isAuth = False
@@ -41,28 +41,24 @@ def remove_post(request):
     return JsonResponse({"operation":"success", "post_id":post_id})
 
 def register(request):
-    return render(request, 'registration/registration_form.html')
-
-def register_complete(request):
-    print "registriram novog korisnika"
-    reqUsername = request.POST['username']
-    reqPassword = request.POST['password']
-    reqEmail = request.POST['email']
-    reqPhone = request.POST['mobile_phone']
-    reqFirstName = request.POST['first_name']
-    reqLastName = request.POST['last_name']
-    if reqFirstName is None:
-        reqFirstName = ""
-    if reqLastName is None:
-        reqLastName = ""
-    authUser = User.objects.create_user(username=reqUsername, email=reqEmail, password=reqPassword, first_name=reqFirstName, last_name=reqLastName)
-    authUser.save()
-    if reqPhone is None:
-        reqPhone = ""
-    socialUser = SocialUser(user=authUser,phone=reqPhone)
-    socialUser.save()
-    send_mail("Success registration on Django Social App", "Bravo, login data: /n username: "+reqUsername+" /n password: "+ reqPassword, None, [reqEmail], fail_silently=False)
-    return render(request, 'registration/registration_complete.html')
+    if request.method == "POST":
+        formUser = RegistrationFormUser(request.POST.copy())
+        formSocialUser = RegistrationFormSocialUser(request.POST.copy())
+        if formUser.is_valid() and formSocialUser.is_valid():
+            registrationUser= formUser.save()
+            registrationSocialUser= formSocialUser.save(commit=False)
+            registrationSocialUser.user = registrationUser
+            registrationSocialUser.save()
+            send_mail("Success registration on Django Social App", "Bravo, login data: /n username: "+registrationUser.username+" /n password: "+ registrationUser.password, None, [registrationUser.email], fail_silently=False)
+            return render(request, 'index.html')
+        else:
+            formUser = RegistrationFormUser()
+            formSocialUser = RegistrationFormSocialUser()
+            return render(request, 'registration/registration_form.html', {'formUser':formUser, 'formSocialUser':formSocialUser})
+    else:
+        formUser = RegistrationFormUser()
+        formSocialUser = RegistrationFormSocialUser()
+        return render(request, 'registration/registration_form.html', {'formUser':formUser, 'formSocialUser':formSocialUser})
 
 def create_new_chat(request):
     chat_creator = SocialUser.objects.get(id= request.POST['creator_id'])

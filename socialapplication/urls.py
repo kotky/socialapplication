@@ -27,7 +27,6 @@ urlpatterns = [
     url(r'^password_change/$', auth_views.password_change, name='password_change'),
     url(r'^password_reset/$', auth_views.password_reset, name='auth_password_reset'),
     url(r'^register/$', views.register, name='registration_register'),
-    url(r'^register/result/$', views.register_complete, name='registration_register_result'),
     url(r'^send/post/$', views.publish_post, name='publish_post'),
     url(r'^post/remove/$', views.remove_post, name='remove_post'),
 ]
