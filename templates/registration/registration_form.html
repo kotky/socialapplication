@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+    <form method="post" action="/register/result/" class="form-horizontal">
+    {% csrf_token %}
+<fieldset>
+
+<!-- Form Name -->
+<legend>Register</legend>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="username">Username*</label>
+  <div class="col-md-4">
+  <input id="username" name="username" type="text" placeholder="select username" class="form-control input-md" required="">
+
+  </div>
+</div>
+
+<!-- Password input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="password">Password*</label>
+  <div class="col-md-4">
+    <input id="password" name="password" type="password" placeholder="select password" class="form-control input-md" required="">
+
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="email">Email*</label>
+  <div class="col-md-4">
+  <input id="email" name="email" type="text" placeholder="valid email" class="form-control input-md" required="">
+
+  </div>
+</div>
+
+    <!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="first_name">First Name</label>
+  <div class="col-md-4">
+  <input id="first_name" name="first_name" type="text" placeholder="first name" class="form-control input-md">
+
+  </div>
+</div>
+
+        <!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="last_name">Last Name</label>
+  <div class="col-md-4">
+  <input id="last_name" name="last_name" type="text" placeholder="last name" class="form-control input-md">
+
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="mobile_phone">Mobile Phone</label>
+  <div class="col-md-4">
+  <input id="mobile_phone" name="mobile_phone" type="text" placeholder="mobile phone" class="form-control input-md">
+
+  </div>
+</div>
+
+<!-- File Button -->
+    <!--
+<div class="form-group">
+  <label class="col-md-4 control-label" for="image">Avatar Image</label>
+  <div class="col-md-4">
+    <input id="image" name="image" class="input-file" type="file">
+  </div>
+</div>
+-->
+
+<!-- Button (Double) -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="cancel"></label>
+  <div class="col-md-8">
+    <button id="cancel" name="cancel" class="btn btn-inverse"><a href="{% url 'index' %}">{% trans "Cancel" %}</a></button>
+    <button id="register" name="register" class="btn btn-success" type="submit">{% trans 'Register' %}</button>
+  </div>
+</div>
+
+</fieldset>
+
+</form>
+
+{% endblock %}

@@ -65,6 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.media',
             ],
         },
     },
@@ -78,8 +79,12 @@ WSGI_APPLICATION = 'socialapplication.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'django_test_db',
+        'USER': 'root',
+        'PASSWORD': 'dingac',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
@@ -101,4 +106,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+STATIC_ROOT = '~/PycharmProjects/socialapplication/static/'
 STATIC_URL = '/static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'smartsystemsdd@gmail.com'
+EMAIL_HOST_PASSWORD = 'maxflexo616043'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
