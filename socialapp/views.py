@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, views
+from django.contrib.auth import authenticate, views, login
 from socialapp.models import SocialUser, Chats, ChatsUsers, ChatMessages, Posts, Likes
-from socialapp.forms import RegistrationFormUser, RegistrationFormSocialUser
+from socialapp.forms import RegistrationFormUser, RegistrationFormSocialUser, LoginForm
 from django.db.models import Q
 from django.core.mail import send_mail
 from datetime import datetime, timedelta
@@ -14,10 +14,9 @@ def index(request):
     username = ""
     post_dict = {}
     if request.user.is_authenticated():
-        social_user = SocialUser.objects.get(user=request.user)
         isAuth = True
         username = request.user.username
-        all_posts_and_comments = Posts.objects.all().filter(Q(user=social_user) | Q(user__in=social_user.friends.all().values_list('user'))).order_by("date_created")
+        all_posts_and_comments = Posts.objects.all().filter(Q(user=request.user) | Q(user__in=SocialUser.objects.get(user=request.user).friends.all())).order_by("date_created")
         for post in all_posts_and_comments:
             post_likes = Likes.objects.filter(post=post)
             if len(Likes.objects.filter(post=post)) > 0:
@@ -28,7 +27,7 @@ def index(request):
             if post.image:
                 post_image = post.image.url
             if post.parent is None:
-                post_dict["post_"+str(post.id)]={"postId":post.id,"post_creator_id":post.user.user.id, "post_creator_username":post.user.user.username, "post_text":post.text,"post_image":post_image,"post_likes":len(post_likes), "liked_alredy":liked_alredy, "post_comments":[], "post_date_created": post.date_created}
+                post_dict["post_"+str(post.id)]={"postId":post.id,"post_creator_id":post.user.id, "post_creator_username":post.user.username, "post_text":post.text,"post_image":post_image,"post_likes":len(post_likes), "liked_alredy":liked_alredy, "post_comments":[], "post_date_created": post.date_created}
             else:
                 post_dict["post_"+post.parent.id]["comments"].append({"commentId":post.id,"comment_creator_id":post.user.id, "comment_creator_username":post.user.username, "comment_text":post.text,"comment_image":post_image,"comment_likes":len(post_likes), "liked_alredy":liked_alredy})
     #print sorted(post_dict.values(), key=lambda k: k['post_date_created'], reverse=True)
@@ -42,14 +41,16 @@ def remove_post(request):
 
 def register(request):
     if request.method == "POST":
-        formUser = RegistrationFormUser(request.POST.copy())
-        formSocialUser = RegistrationFormSocialUser(request.POST.copy())
+        formUser = RegistrationFormUser(data = request.POST.copy())
+        formSocialUser = RegistrationFormSocialUser(data = request.POST.copy())
         if formUser.is_valid() and formSocialUser.is_valid():
             registrationUser= formUser.save()
+            registrationUser.set_password(registrationUser.password)
+            registrationUser.save()
             registrationSocialUser= formSocialUser.save(commit=False)
             registrationSocialUser.user = registrationUser
             registrationSocialUser.save()
-            send_mail("Success registration on Django Social App", "Bravo, login data: /n username: "+registrationUser.username+" /n password: "+ registrationUser.password, None, [registrationUser.email], fail_silently=False)
+            send_mail("Success registration on Django Social App", "Bravo, login data: username: "+registrationUser.username+", password: "+ registrationUser.password, None, [registrationUser.email], fail_silently=False)
             return render(request, 'index.html')
         else:
             formUser = RegistrationFormUser()
@@ -92,8 +93,7 @@ def send_message(request):
     chat_message.save()
 
 def publish_post(request):
-    user = SocialUser.objects.get(user = request.user)
-    post = Posts(user=user, date_created = datetime.now(), text=request.POST["post_text"])
+    post = Posts(user=request.user, date_created = datetime.now(), text=request.POST["post_text"])
     if len(request.FILES) > 0:
         post.image = request.FILES["input-file-preview"]
     post.save()
@@ -101,9 +101,32 @@ def publish_post(request):
 
 def logout_user(request):
     if request.user.is_authenticated():
-        views.logout(request ,template_name="base.html")
+        views.logout(request ,template_name="index.html")
     isAuth = False
     username = ""
     print isAuth
     return render(request, 'index.html', {'user':{'is_authenticated':isAuth, 'username':username}})
 
+def login_user(request):
+    if request.method == "POST":
+        formLogin = LoginForm(data=request.POST)
+        print formLogin.is_valid()
+        if formLogin.is_valid() :
+            user = authenticate(username=request.POST['username'], password=request.POST['password'])
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    # Redirect to a success page.
+                    return render(request, 'index.html')
+                else:
+                    # Return a 'disabled account' error message
+                    print "disabled account"
+            else:
+                # Return an 'invalid login' error message.
+                print "invalid login"
+        else:
+            formLogin = LoginForm()
+            return render(request, 'registration/login.html', {'formLogin':formLogin})
+    else:
+        formLogin = LoginForm()
+        return render(request, 'registration/login.html', {'formLogin':formLogin})

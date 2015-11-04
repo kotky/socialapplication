@@ -2,42 +2,22 @@
 {% load i18n %}
 
 {% block content %}
-<form class="form-horizontal" method="post" action=".">
+<form class="form-horizontal" method="post">
 {% csrf_token %}
-<fieldset>
-
-<!-- Form Name -->
-<legend>Login</legend>
-
-<!-- Text input-->
-<div class="form-group">
-  <label class="col-md-4 control-label" for="id_username">Username</label>
-  <div class="col-md-4">
-  <input id="username" name="username" type="text" placeholder="username" class="form-control input-md" required="">
-
-  </div>
-</div>
-
-<!-- Password input-->
-<div class="form-group">
-  <label class="col-md-4 control-label" for="id_password">Password</label>
-  <div class="col-md-4">
-    <input id="password" name="password" type="password" placeholder="password" class="form-control input-md">
-
-  </div>
-</div>
-
-<!-- Button (Double) -->
+    {% for field in formLogin %}
+        <div class="form-group">
+          <label class="col-md-4 control-label" for="{{ field.id }}">{{ field.label }}</label>
+          <div class="col-md-4">
+            {{ field }}
+          </div>
+        </div>
+    {% endfor %}
 <div class="form-group">
   <label class="col-md-4 control-label" for="forgot_password"></label>
   <div class="col-md-8">
     <button id="forgot_password" name="forgot_password" class="btn btn-info"><a href="{% url 'auth_password_reset' %}">{% trans "Reset password!" %}</a></button>
-    <button id="login" name="login" class="btn btn-success" type="submit">{% trans 'Log in!' %}</button>
-
+    <button class="btn btn-success" type="submit">{% trans 'Log in!' %}</button>
   </div>
 </div>
-
-</fieldset>
-<input type="hidden" name="next" value="/" />
 </form>
 {% endblock %}

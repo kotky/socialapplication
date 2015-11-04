@@ -22,7 +22,7 @@ from django.conf import settings
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.index, name='index'),
-    url(r'^login/$', auth_views.login, name='login'),
+    url(r'^login/$', views.login_user, name='login'),
     url(r'^logout/$', views.logout_user, name='logout'),
     url(r'^password_change/$', auth_views.password_change, name='password_change'),
     url(r'^password_reset/$', auth_views.password_reset, name='auth_password_reset'),

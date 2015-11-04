@@ -22,7 +22,7 @@
         <a href="{% url 'django.contrib.auth.views.password_change' %}">{% trans "Change password" %}</a>)
         <div id="user_data" data-userId="{{ user.user_id }}"></div>
 	{% else %}
-	    <a href="{% url 'django.contrib.auth.views.login' %}">{% trans "Log in" %}</a>|
+	    <a href="{% url 'login' %}">{% trans "Log in" %}</a>|
         <a href="{% url 'registration_register' %}">{% trans "Register" %}</a>
 	{% endif %}
 	<hr />

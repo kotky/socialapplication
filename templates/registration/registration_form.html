@@ -4,9 +4,29 @@
 {% block content %}
     <form method="post" class="form-horizontal">
         {% csrf_token %}
-        {{ formUser.as_p }}
-        {{ formSocialUser.as_p }}
-        <button type="submit" class="save btn btn-default">Save</button>
+        {% for field in formUser %}
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="{{ field.id }}">{{ field.label }}</label>
+              <div class="col-md-4">
+                {{ field }}
+              </div>
+            </div>
+        {% endfor %}
+        {% for field in formSocialUser %}
+            <div class="form-group">
+              <label class="col-md-4 control-label" for="{{ field.id }}">{{ field.label }}</label>
+              <div class="col-md-4">
+                {{ field }}
+              </div>
+            </div>
+        {% endfor %}
+        <div class="form-group">
+          <label class="col-md-4 control-label" for="cancel"></label>
+          <div class="col-md-8">
+            <button  class="btn btn-inverse"><a href="{% url 'index' %}">{% trans "Cancel" %}</a></button>
+            <button  class="btn btn-success" type="submit">{% trans 'Register' %}</button>
+          </div>
+        </div>
     </form>
 
 {% endblock %}
