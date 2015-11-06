@@ -113,14 +113,35 @@ SetWebSockets = function()
 
         // 1) subscribe to a topic
         console.log("uspjesna konekcija")
-        function onevent(args) {
-            var dict = args[0];
-            console.log("args:", args[0]);
-        }
         userId = $("#user_data").attr("data-userId");
-        session.subscribe("User_"+userId, onevent);
+        session.subscribe("User_"+userId, WebSocketEventParser);
     };
     connection.open();
+}
+WebSocketEventParser = function(data)
+{
+    recived_data = data[0];
+    console.log(data[0]);
+    if (recived_data.event=="like_update")
+    {
+        view_data = recived_data.data;
+        if (view_data.type=="post")
+        {
+            $("#post_"+view_data.post_id).find(".like_count").text(view_data.like_count);
+        }
+    }
+    else if (recived_data.event=="post_removed")
+    {
+        view_data = recived_data.data;
+        if (view_data.type=="post")
+        {
+            $("#post_"+view_data.post_id).remove();
+        }
+        else if (view_data.type=="comment")
+        {
+            $("#comment_"+view_data.post_id).remove();
+        }
+    }
 }
 RemoveElement = function(data)
 {

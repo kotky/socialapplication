@@ -50,11 +50,14 @@
                     <div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
                         <div class="img-rounded panel panel-info">
                             <div class="text-left panel-heading">
+                                <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ values.post_creator_username }}: </p>
                                 <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ values.post_text }}</p>
+                            {% if values.post_creator_id == user.user_id %}
                                 <div class="btn btn-default pull-right margin-left-5px remove_button" data-url="/remove/post/{{ values.postId }}">
                                     <span class="glyphicon glyphicon-remove-circle"></span>
                                     <span>Remove</span>
                                 </div>
+                            {% endif %}
                             {% if values.liked_alredy %}
                                 <div class="btn btn-default pull-right margin-left-5px like_button btn-success " data-url="/unlike/post/{{ values.postId }}">
                                     <span class="glyphicon glyphicon-thumbs-up"></span>
