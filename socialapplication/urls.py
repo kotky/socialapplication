@@ -29,6 +29,11 @@ urlpatterns = [
     url(r'^register/$', views.register, name='registration_register'),
     url(r'^send/post/$', views.publish_post, name='publish_post'),
     url(r'^post/remove/$', views.remove_post, name='remove_post'),
+    url(regex=r'^like/(?P<target>\w{1,50})/(?P<id>\w{1,50})/$', view=views.like, name='like'),
+    url(regex=r'^unlike/(?P<target>\w{1,50})/(?P<id>\w{1,50})/$', view=views.unlike, name='unlike'),
+    url(regex=r'^remove/(?P<target>\w{1,50})/(?P<id>\w{1,50})/$', view=views.remove, name='remove'),
+    url(r'^friends/search/$', views.search_friends, name='friends_search'),
+    url(r'^friends/(?P<target>\w{1,50})/(?P<id>\w{1,50})/$', views.add_or_remove_friend, name='friend_add_remove')
 ]
 if settings.DEBUG:
   urlpatterns.append(url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}))

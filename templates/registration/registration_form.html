@@ -6,23 +6,23 @@
         {% csrf_token %}
         {% for field in formUser %}
             <div class="form-group">
-              <label class="col-md-4 control-label" for="{{ field.id }}">{{ field.label }}</label>
-              <div class="col-md-4">
+              <label class="col-sm-4 control-label" for="#{{ field.auto_id }}">{{ field.label }}</label>
+              <div class="col-sm-4">
                 {{ field }}
               </div>
             </div>
         {% endfor %}
         {% for field in formSocialUser %}
             <div class="form-group">
-              <label class="col-md-4 control-label" for="{{ field.id }}">{{ field.label }}</label>
-              <div class="col-md-4">
+              <label class="col-sm-4 control-label" for="#{{ field.auto_id }}">{{ field.label }}</label>
+              <div class="col-sm-4">
                 {{ field }}
               </div>
             </div>
         {% endfor %}
         <div class="form-group">
-          <label class="col-md-4 control-label" for="cancel"></label>
-          <div class="col-md-8">
+          <label class="col-sm-4 control-label" for="cancel"></label>
+          <div class="col-sm-8">
             <button  class="btn btn-inverse"><a href="{% url 'index' %}">{% trans "Cancel" %}</a></button>
             <button  class="btn btn-success" type="submit">{% trans 'Register' %}</button>
           </div>

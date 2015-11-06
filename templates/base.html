@@ -17,7 +17,8 @@
         {% block header %}
 	<a href="{% url 'index' %}">{% trans "Home" %}</a> |
 	{% if user.is_authenticated %}
-	{% trans "Logged in" %}: {{ user.username }} 
+        <a href="{% url 'friends_search' %}">{% trans "Add Friends" %}</a> |
+	    {% trans "Logged in" %}: {{ user.username }}
         (<a href="{% url 'logout' %}">{% trans "Log out" %}</a> |
         <a href="{% url 'django.contrib.auth.views.password_change' %}">{% trans "Change password" %}</a>)
         <div id="user_data" data-userId="{{ user.user_id }}"></div>
