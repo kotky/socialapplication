@@ -48,7 +48,7 @@
             </form>
 
             {% for post in posts %}
-                <div class="row post_container" id="post_{{ post.id }}" data-date-created="{{ post.date_created}}">
+                <div class="row post_container" id="post_{{ post.id }}" data-date-created="{{ post.date_created_ms}}">
                     <div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
                         <div class="img-rounded panel panel-info">
                             <div class="text-left panel-heading">
@@ -80,17 +80,16 @@
                                     </a>
                                  </div>
                             {% endif %}
-                            <div class="panel-footer ">
-                                <p  class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">&nbsp</p>
+                            <div class=" panel-footer ">
                                 <div class="btn btn-default pull-right" data-toggle="collapse" data-target="#comment_wrapper_{{ post.id }}">
                                     <span class="glyphicon glyphicon-comment"></span>
                                     <span>Comment!</span>
                                 </div>
-                                <div class="row collapse" id="comment_wrapper_{{ post.id }}">
-                                    <form method="post" class="form-horizontal" enctype="multipart/form-data">
-                                        {% csrf_token %}
-                                        <div class="row">
-                                            <div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
+                                <div class="row">
+                                    <div class=" collapse col-xs-12 col-sm-10 col-sm-offset-1" id="comment_wrapper_{{ post.id }}" style="margin-top: 10px">
+                                        <form method="post" class="form-horizontal" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <div class="col-xs-12">
                                                 <div class="input-group">
                                                     <input id="comment_text_{{ post.id }}" name="comment_text" class="form-control" placeholder="" type="text" required>
                                                     <span class="input-group-btn">
@@ -105,25 +104,64 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div id="image_upload_wrapper_{{ post.id }}" class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 collapse">
-                                                <div class="input-group image-preview">
-                                                    <input type="text" class="form-control image-preview-filename" disabled="disabled">
-                                                    <span class="input-group-btn">
-                                                        <button type="button" class="btn btn-default image-preview-clear" style="display:none;">
-                                                            <span class="glyphicon glyphicon-remove"></span> Clear
-                                                        </button>
-                                                        <div class="btn btn-default image-preview-input">
-                                                            <span class="glyphicon glyphicon-folder-open"></span>
-                                                            <span class="image-preview-input-title">Browse</span>
-                                                            <input id="comment_image_{{ post.id }}" type="file" accept="image/png, image/jpeg, image/gif" name=""/>
-                                                        </div>
-                                                    </span>
+                                            <div class="col-xs-12 ">
+                                                <div id="image_upload_wrapper_{{ post.id }}" class="collapse">
+                                                    <div class="input-group image-preview">
+                                                        <input type="text" class="form-control image-preview-filename" disabled="disabled">
+                                                        <span class="input-group-btn">
+                                                            <button type="button" class="btn btn-default image-preview-clear" style="display:none;">
+                                                                <span class="glyphicon glyphicon-remove"></span> Clear
+                                                            </button>
+                                                            <div class="btn btn-default image-preview-input">
+                                                                <span class="glyphicon glyphicon-folder-open"></span>
+                                                                <span class="image-preview-input-title">Browse</span>
+                                                                <input id="comment_image_{{ post.id }}" type="file" accept="image/png, image/jpeg, image/gif" name=""/>
+                                                            </div>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </form>
+                                        <div class="comment_all_container col-xs-12 " style="margin-top: 10px">
+                                            {% for comment in post.comments %}
+                                                 <article class="row comment_wrapper" data-date-created="{{ comment.date_created_ms }}">
+                                                {% if comment.creator_id == user.user_id %}
+                                                    <div class="col-md-2 col-sm-2 hidden-xs ">
+                                                {% else %}
+                                                    <div class="col-md-2 col-sm-2 hidden-xs pull-right">
+                                                {% endif %}
+                                                      <figure class="thumbnail">
+                                                        <img class="img-responsive" src="{{ comment.creator_image }}" />
+                                                        <figcaption class="text-center">{{ comment.creator_username }}</figcaption>
+                                                      </figure>
+                                                    </div>
+                                                    <div class="col-xs-12 col-sm-10">
+                                                      <div class="panel panel-default arrow left">
+                                                        <div class="panel-body">
+                                                          <header class="text-left">
+                                                            <div class="comment-user pull-left"><i class="fa fa-user"></i> {{ comment.creator_username }}</div>
+                                                            <time class="comment-date pull-right" datetime="{{ comment.date_created }}"><i class="fa fa-clock-o"></i>{{ comment.date_created }}</time>
+                                                          </header>
+                                                          <div class="comment-post">
+                                                          <hr>
+                                                            <p>
+                                                             {{ comment.text }}
+                                                            </p>
+                                                            {% if comment.image != "" %}
+                                                                <div class="">
+                                                                    <a href="{{ comment.image }}" class="thumbnail">
+                                                                        <img src="{{ comment.image }}" alt="{{ comment.image }}" class="img-responsive img-rounded">
+                                                                    </a>
+                                                                 </div>
+                                                            {% endif %}
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </article>
+                                            {% endfor %}
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

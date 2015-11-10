@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^password_reset/$', auth_views.password_reset, name='auth_password_reset'),
     url(r'^register/$', views.register, name='registration_register'),
     url(r'^send/post/$', views.publish_post, name='publish_post'),
+    url(r'^send/comment/$', views.publish_comment, name='publish_comment'),
     url(r'^post/remove/$', views.remove_post, name='remove_post'),
     url(regex=r'^like/(?P<target>\w{1,50})/(?P<id>\w{1,50})/$', view=views.like, name='like'),
     url(regex=r'^unlike/(?P<target>\w{1,50})/(?P<id>\w{1,50})/$', view=views.unlike, name='unlike'),

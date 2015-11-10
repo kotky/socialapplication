@@ -49,6 +49,7 @@ $(document).on('click', '#close-preview', function(){
 });
 
 $(function() {
+    _baseUrl = location.origin;
     ImagePreviewPostInputInitialize();
     SetAjaxEvents();
     SetWebSockets();
@@ -115,6 +116,8 @@ SetAjaxEvents = function()
         AjaxCaller(url,"",_text_options,ManageFriend );
     });
      $(document).on("click", ".upload_comment", function(event){
+         post_id = $(this).parents(".post_container").attr("id").split("_")[1];
+         console.log($("#comment_text_"+post_id).val())
          var text = $("#comment_text_"+post_id).val()
          if (text != "" && text != undefined)
          {
@@ -220,10 +223,12 @@ WebSocketEventParser = function(data)
         }
         else if (view_data.type=="comment")
         {
-            allPosts = $("#main_post_container").find("#post_"+data.post_id).find(".comment_container").each(function(index, value)
+            allPosts = $("#main_post_container").find("#post_"+data.post_id).find(".comment_all_container").find(".comment_wrapper").each(function(index, value)
                 {
-                    if (parseFloat(value.attr("data-date-created"))<parseFloat(data.date_created))
+                    if (parseFloat($(value).attr("data-date-created"))>parseFloat(view_data.date_created))
                     {
+                        postHtml = GenerateCommentHtml(view_data);
+                        $(postHtml).insertAfter(value);
                         return false;
                     }
                 }
@@ -381,3 +386,40 @@ GeneratePostHtml = function(data)
                 '</div>';
     return return_html;
 }
+/*
+GenerateCommentHtml = function(data)
+{
+    var return_html = '<article class="row comment_wrapper" data-date-created="'+data.date_created_ms+'">'
+                        if (data.creator_id == $("#user_data").attr("data-userId"))
+                            return_html += '<div class="col-md-2 col-sm-2 hidden-xs ">'
+                        else
+                            return_html += '<div class="col-md-2 col-sm-2 hidden-xs pull-right">'
+                        return_html += '<figure class="thumbnail">'+
+                                '<img class="img-responsive" src="'+data.creator_image +'" />'+
+                                '<figcaption class="text-center">'+data.creator_username +'</figcaption>'+
+                              '</figure>'+
+                            '</div>'+
+                            '<div class="col-xs-12 col-sm-10">'+
+                              '<div class="panel panel-default arrow left">'+
+                                '<div class="panel-body">'+
+                                  '<header class="text-left">'+
+                                    '<div class="comment-user pull-left"><i class="fa fa-user"></i> '+data.creator_username +'</div>'+
+                                    '<time class="comment-date pull-right" datetime="'+data.date_created+'"><i class="fa fa-clock-o"></i>'+data.date_created+'</time>'+
+                                  '</header>'+
+                                  '<div class="comment-post">'+
+                                  '<hr>'+
+                                    '<p>'+ data.text +'</p>'
+                                    if data.image != ""
+                                        <div class="">
+                                            <a href="{{ comment.image }}" class="thumbnail">
+                                                <img src="{{ comment.image }}" alt="{{ comment.image }}" class="img-responsive img-rounded">
+                                            </a>
+                                         </div>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </article>
+}
+    */
