@@ -8,6 +8,7 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('auth', '0006_require_contenttypes_0002'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -34,7 +35,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('chat', models.ForeignKey(to='socialapp.Chats')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
@@ -60,18 +60,21 @@ class Migration(migrations.Migration):
                 ('image', models.ImageField(null=True, upload_to=b'posts')),
                 ('parent', models.ForeignKey(blank=True, to='socialapp.Posts', null=True)),
                 ('type', models.ForeignKey(to='socialapp.DataTypes', null=True)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='SocialUser',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('user', models.OneToOneField(related_name='socialapp_socialuser_user', primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
                 ('image', models.ImageField(default=b'avatar/icon-user-default.png', upload_to=b'avatars')),
                 ('phone', models.CharField(max_length=30)),
-                ('friends', models.ManyToManyField(related_name='socialuser_friend', to=settings.AUTH_USER_MODEL)),
-                ('user', models.OneToOneField(related_name='socialuser_user', to=settings.AUTH_USER_MODEL)),
+                ('friends', models.ManyToManyField(related_name='socialapp_socialuser_friend', to=settings.AUTH_USER_MODEL)),
             ],
+        ),
+        migrations.AddField(
+            model_name='posts',
+            name='user',
+            field=models.ForeignKey(related_name='socialapp_posts_user', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='likes',
@@ -81,7 +84,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='likes',
             name='user',
+            field=models.ForeignKey(related_name='socialapp_likes_user', to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='chatsusers',
+            name='user',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='chats',
+            name='creator',
+            field=models.ForeignKey(related_name='socialapp_chats_user', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='chatmessages',
@@ -91,6 +104,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='chatmessages',
             name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='socialapp_chatmessages_user', to=settings.AUTH_USER_MODEL),
         ),
     ]

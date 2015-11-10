@@ -15,8 +15,10 @@
                             <span class="glyphicon glyphicon-picture"></span>
                             <span class="image-select">Add Image!</span>
                         </div>
-                        <input class="btn btn-default image-preview-upload" type="submit" value="Post It!">
-                        </input>
+                        <div class="btn btn-default upload_post">
+                            <span class="glyphicon glyphicon-upload"></span>
+                            <span >Post It!</span>
+                        </div>
                     </span>
                 </div>
             </div>
@@ -36,7 +38,7 @@
                         <div class="btn btn-default image-preview-input">
                             <span class="glyphicon glyphicon-folder-open"></span>
                             <span class="image-preview-input-title">Browse</span>
-                            <input type="file" accept="image/png, image/jpeg, image/gif" name="input-file-preview"/>
+                            <input type="file" id="post_upload_input" accept="image/png, image/jpeg, image/gif" name="input-file-preview"/>
                             <!-- rename it -->
                         </div>
                     </span>
@@ -45,39 +47,85 @@
             </div>
             </form>
 
-            {% for values in posts %}
-                <div class="row" id="post_{{ values.postId }}">
+            {% for post in posts %}
+                <div class="row post_container" id="post_{{ post.id }}" data-date-created="{{ post.date_created}}">
                     <div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
                         <div class="img-rounded panel panel-info">
                             <div class="text-left panel-heading">
-                                <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ values.post_creator_username }}: </p>
-                                <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ values.post_text }}</p>
-                            {% if values.post_creator_id == user.user_id %}
-                                <div class="btn btn-default pull-right margin-left-5px remove_button" data-url="/remove/post/{{ values.postId }}">
+                                <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ post.creator_username }}: </p>
+                                <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ post.text }}</p>
+                            {% if post.creator_id == user.user_id %}
+                                <div class="btn btn-default pull-right margin-left-5px remove_button" data-url="/remove/post/{{ post.id }}">
                                     <span class="glyphicon glyphicon-remove-circle"></span>
                                     <span>Remove</span>
                                 </div>
                             {% endif %}
-                            {% if values.liked_alredy %}
-                                <div class="btn btn-default pull-right margin-left-5px like_button btn-success " data-url="/unlike/post/{{ values.postId }}">
+                            {% if post.liked_alredy %}
+                                <div class="btn btn-default pull-right margin-left-5px like_button btn-success " data-url="/unlike/post/{{ post.id }}">
                                     <span class="glyphicon glyphicon-thumbs-up"></span>
-                                    <span>Liked</span>
+                                    <span>Like</span>
                                 </div>
                             {% else %}
-                                <div class="btn btn-default pull-right margin-left-5px like_button" data-url="/like/post/{{ values.postId }}">
+                                <div class="btn btn-default pull-right margin-left-5px like_button" data-url="/like/post/{{ post.id }}">
                                     <span class="glyphicon glyphicon-thumbs-up"></span>
                                     <span>Like</span>
                                 </div>
                             {% endif %}
-                                <div class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block pull-right margin-left-5px like_count">{{ values.likes_count }}</div>
+                                <div class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block pull-right margin-left-5px like_count">{{ post.likes_count }}</div>
                             </div>
-                            <div class="panel-body">
-                                {% if values.post_image != "" %}
-                                    <a href="{{ values.post_image }}" class="thumbnail">
-                                        <img src="{{ values.post_image }}" alt="{{ values.post_image }}" class="img-responsive img-rounded">
+                            {% if post.image != "" %}
+                                <div class="panel-body">
+                                    <a href="{{ post.image }}" class="thumbnail">
+                                        <img src="{{ post.image }}" alt="{{ post.image }}" class="img-responsive img-rounded">
                                     </a>
-                                {% endif %}
-                             </div>
+                                 </div>
+                            {% endif %}
+                            <div class="panel-footer ">
+                                <p  class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">&nbsp</p>
+                                <div class="btn btn-default pull-right" data-toggle="collapse" data-target="#comment_wrapper_{{ post.id }}">
+                                    <span class="glyphicon glyphicon-comment"></span>
+                                    <span>Comment!</span>
+                                </div>
+                                <div class="row collapse" id="comment_wrapper_{{ post.id }}">
+                                    <form method="post" class="form-horizontal" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
+                                                <div class="input-group">
+                                                    <input id="comment_text_{{ post.id }}" name="comment_text" class="form-control" placeholder="" type="text" required>
+                                                    <span class="input-group-btn">
+                                                        <div class="btn btn-default image-select-upload" data-toggle="collapse" data-target="#image_upload_wrapper_{{ post.id }}">
+                                                            <span class="glyphicon glyphicon-picture"></span>
+                                                            <span class="image-select">Add Image!</span>
+                                                        </div>
+                                                        <div class="btn btn-default upload_comment" data-url="/send/comment/">
+                                                            <span class="glyphicon glyphicon-upload"></span>
+                                                            <span>Post It!</span>
+                                                        </div>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div id="image_upload_wrapper_{{ post.id }}" class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 collapse">
+                                                <div class="input-group image-preview">
+                                                    <input type="text" class="form-control image-preview-filename" disabled="disabled">
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn btn-default image-preview-clear" style="display:none;">
+                                                            <span class="glyphicon glyphicon-remove"></span> Clear
+                                                        </button>
+                                                        <div class="btn btn-default image-preview-input">
+                                                            <span class="glyphicon glyphicon-folder-open"></span>
+                                                            <span class="image-preview-input-title">Browse</span>
+                                                            <input id="comment_image_{{ post.id }}" type="file" accept="image/png, image/jpeg, image/gif" name=""/>
+                                                        </div>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from datetime import datetime
 # Create your models here.
 class SocialUser(models.Model):
-    user = models.OneToOneField(User,related_name='%(app_label)s_%(class)s_user')
+    user = models.OneToOneField(User,related_name='%(app_label)s_%(class)s_user', primary_key=True)
     image = models.ImageField(upload_to='avatars', default = 'avatar/icon-user-default.png')
     phone = models.CharField(max_length=30)
     friends = models.ManyToManyField(User,related_name='%(app_label)s_%(class)s_friend')

@@ -8,34 +8,10 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0006_require_contenttypes_0002'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='ChatMessages',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('text', models.CharField(max_length=1024)),
-                ('date_pub', models.DateTimeField(verbose_name=b'date published')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Chats',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date_created', models.DateTimeField(verbose_name=b'date and time created')),
-                ('title', models.CharField(max_length=200)),
-                ('last_modified', models.DateTimeField(verbose_name=b'date and time modified')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='ChatsUsers',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('chat', models.ForeignKey(to='posts.Chats')),
-            ],
-        ),
         migrations.CreateModel(
             name='DataTypes',
             fields=[
@@ -59,21 +35,18 @@ class Migration(migrations.Migration):
                 ('image', models.ImageField(null=True, upload_to=b'posts')),
                 ('parent', models.ForeignKey(blank=True, to='posts.Posts', null=True)),
                 ('type', models.ForeignKey(to='posts.DataTypes', null=True)),
+                ('user', models.ForeignKey(related_name='posts_posts_user', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='SocialUser',
             fields=[
-                ('user', models.OneToOneField(primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('image', models.ImageField(default=b'avatar/icon-user-default.png', upload_to=b'avatars')),
                 ('phone', models.CharField(max_length=30)),
-                ('friends', models.ManyToManyField(related_name='_friends_+', to='posts.SocialUser', blank=True)),
+                ('friends', models.ManyToManyField(related_name='posts_socialuser_friend', to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(related_name='posts_socialuser_user', to=settings.AUTH_USER_MODEL)),
             ],
-        ),
-        migrations.AddField(
-            model_name='posts',
-            name='user',
-            field=models.ForeignKey(to='posts.SocialUser'),
         ),
         migrations.AddField(
             model_name='likes',
@@ -83,21 +56,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='likes',
             name='user',
-            field=models.ForeignKey(to='posts.SocialUser'),
-        ),
-        migrations.AddField(
-            model_name='chatsusers',
-            name='user',
-            field=models.ForeignKey(to='posts.SocialUser'),
-        ),
-        migrations.AddField(
-            model_name='chatmessages',
-            name='chat',
-            field=models.ForeignKey(to='posts.Chats'),
-        ),
-        migrations.AddField(
-            model_name='chatmessages',
-            name='user',
-            field=models.ForeignKey(to='posts.SocialUser'),
+            field=models.ForeignKey(related_name='posts_likes_user', to=settings.AUTH_USER_MODEL),
         ),
     ]
