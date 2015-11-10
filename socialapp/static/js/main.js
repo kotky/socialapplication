@@ -207,7 +207,7 @@ WebSocketEventParser = function(data)
             {
                 $("#main_post_container").find(".post_container").each(function(index, value)
                 {
-                    if (parseFloat($(value).attr("data-date-created"))<parseFloat(view_data.date_created))
+                    if (parseFloat($(value).attr("data-date-created"))<parseFloat(view_data.date_created_ms))
                     {
                         postHtml = GeneratePostHtml(view_data);
                         $(postHtml).insertBefore(value);
@@ -223,16 +223,27 @@ WebSocketEventParser = function(data)
         }
         else if (view_data.type=="comment")
         {
-            allPosts = $("#main_post_container").find("#post_"+data.post_id).find(".comment_all_container").find(".comment_wrapper").each(function(index, value)
+            console.log(view_data)
+            allPosts = $("#main_post_container").find("#post_"+view_data.post_id).find(".comment_all_container").find(".comment_wrapper")
+            if (allPosts.length>0)
+            {
+                allPosts.each(function(index, value)
                 {
-                    if (parseFloat($(value).attr("data-date-created"))>parseFloat(view_data.date_created))
+                    console.log(value)
+                    if (parseFloat($(value).attr("data-date-created"))>parseFloat(view_data.date_created_ms) || (index == allPosts.length-1))
                     {
                         postHtml = GenerateCommentHtml(view_data);
                         $(postHtml).insertAfter(value);
                         return false;
                     }
-                }
-            )
+                })
+            }
+            else
+            {
+                console.log(view_data);
+                $("#main_post_container").find("#post_"+view_data.post_id).find(".comment_all_container").append(GenerateCommentHtml(view_data))
+            }
+
         }
     }
 }
@@ -386,7 +397,6 @@ GeneratePostHtml = function(data)
                 '</div>';
     return return_html;
 }
-/*
 GenerateCommentHtml = function(data)
 {
     var return_html = '<article class="row comment_wrapper" data-date-created="'+data.date_created_ms+'">'
@@ -408,18 +418,19 @@ GenerateCommentHtml = function(data)
                                   '</header>'+
                                   '<div class="comment-post">'+
                                   '<hr>'+
-                                    '<p>'+ data.text +'</p>'
-                                    if data.image != ""
-                                        <div class="">
-                                            <a href="{{ comment.image }}" class="thumbnail">
-                                                <img src="{{ comment.image }}" alt="{{ comment.image }}" class="img-responsive img-rounded">
-                                            </a>
-                                         </div>
-                                    {% endif %}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </article>
+                                    '<p>'+ data.text +'</p>';
+                                    if (data.image != "")
+                                    {
+                                      return_html += '<div class="">'+
+                                            '<a href="'+data.image +'" class="thumbnail">'+
+                                                '<img src="'+data.image+'" alt="'+ data.image +'" class="img-responsive img-rounded">'+
+                                            '</a>'+
+                                         '</div>';
+                                    }
+                                  return_html += '</div>'+
+                                '</div>'+
+                              '</div>'+
+                            '</div>'+
+                          '</article>';
+    return return_html;
 }
-    */
