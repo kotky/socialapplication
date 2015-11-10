@@ -134,7 +134,7 @@ SetAjaxEvents = function()
                 form_data.append("image", undefined);
              form_data.append("post_id", post_id);
              form_data.append("user_id", user_id);
-             form_data.append("csrfmiddlewaretoken",$(this).parents("form").find("input[name='csrfmiddlewaretoken']").val())
+             form_data.append("csrfmiddlewaretoken",$("input[name='csrfmiddlewaretoken']").val())
              AjaxCaller(url,form_data, _file_options, AddCommentOrPost );
          }
     });
@@ -299,9 +299,10 @@ AddCommentOrPost = function (data) {
         $("#post_text").val("");
         $('.image-preview-clear').click();
     }
-    else if (data.status=="uploaded_comment")
+    else if (data.status=="comment_added")
     {
-
+        $("#comment_text_"+data.id).val("");
+        $("#image_upload_wrapper_"+data.id).find(".image-preview-clear").click();
     }
 }
 AjaxCaller = function(url, data, options, callback)
@@ -318,7 +319,7 @@ AjaxCaller = function(url, data, options, callback)
 }
 GeneratePostHtml = function(data)
 {
-    var return_html = '<div class="row post_container" id="post_'+data.id+'" data-date-created="'+data.date_created+'">'+
+    var return_html = '<div class="row post_container" id="post_'+data.id+'" data-date-created="'+data.date_created_ms+'">'+
                     '<div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">'+
                         '<div class="img-rounded panel panel-info">'+
                             '<div class="text-left panel-heading">'+
@@ -339,24 +340,23 @@ GeneratePostHtml = function(data)
                                 '</div>'+
                                 '<div class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block pull-right margin-left-5px like_count">0</div>'+
                             '</div>';
-                            if (data.image_url != "")
+                            if (data.image != "")
                             {
                                 return_html += '<div class="panel-body">'+
-                                    '<a href="'+data.image_url+'" class="thumbnail">'+
-                                        '<img src="'+data.image_url+'" alt="'+data.image_url+'" class="img-responsive img-rounded">'+
+                                    '<a href="'+data.image+'" class="thumbnail">'+
+                                        '<img src="'+data.image+'" alt="'+data.image+'" class="img-responsive img-rounded">'+
                                     '</a>'+
                                  '</div>';
                             }
                             return_html += '<div class="panel-footer ">'+
-                                '<p  class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">&nbsp</p>'+
                                 '<div class="btn btn-default pull-right" data-toggle="collapse" data-target="#comment_wrapper_'+data.id+'">'+
                                     '<span class="glyphicon glyphicon-comment"></span>'+
                                     '<span>Comment!</span>'+
                                 '</div>'+
-                                '<div class="row collapse" id="comment_wrapper_'+data.id+'">'+
-                                    '<form method="post" class="form-horizontal" enctype="multipart/form-data">'+
-                                        '<div class="row">'+
-                                            '<div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">'+
+                                '<div class="row">'+
+                                    '<div class="col-xs-12 col-sm-10 col-sm-offset-1 collapse" id="comment_wrapper_'+data.id+'" style="margin-top: 10px;">'+
+                                        '<form method="post" class="form-horizontal" enctype="multipart/form-data">'+
+                                            '<div class="col-xs-12">'+
                                                 '<div class="input-group">'+
                                                     '<input id="comment_text_'+data.id+'" name="comment_text" class="form-control" placeholder="" type="text" required>'+
                                                     '<span class="input-group-btn">'+
@@ -371,25 +371,27 @@ GeneratePostHtml = function(data)
                                                     '</span>'+
                                                 '</div>'+
                                             '</div>'+
-                                        '</div>'+
-                                        '<div class="row">'+
-                                            '<div id="image_upload_wrapper_'+data.id+'" class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 collapse">'+
-                                                '<div class="input-group image-preview">'+
-                                                    '<input type="text" class="form-control image-preview-filename" disabled="disabled">'+
-                                                    '<span class="input-group-btn">'+
-                                                        '<button type="button" class="btn btn-default image-preview-clear" style="display:none;">'+
-                                                            '<span class="glyphicon glyphicon-remove"></span> Clear'+
-                                                        '</button>'+
-                                                        '<div class="btn btn-default image-preview-input">'+
-                                                            '<span class="glyphicon glyphicon-folder-open"></span>'+
-                                                            '<span class="image-preview-input-title">Browse</span>'+
-                                                            '<input id="comment_image_'+data.id+'" type="file" accept="image/png, image/jpeg, image/gif" name=""/>'+
-                                                        '</div>'+
-                                                    '</span>'+
+                                            '<div class="col-xs-12">'+
+                                                '<div id="image_upload_wrapper_'+data.id+'"collapse">'+
+                                                    '<div class="input-group image-preview">'+
+                                                        '<input type="text" class="form-control image-preview-filename" disabled="disabled">'+
+                                                        '<span class="input-group-btn">'+
+                                                            '<button type="button" class="btn btn-default image-preview-clear" style="display:none;">'+
+                                                                '<span class="glyphicon glyphicon-remove"></span> Clear'+
+                                                            '</button>'+
+                                                            '<div class="btn btn-default image-preview-input">'+
+                                                                '<span class="glyphicon glyphicon-folder-open"></span>'+
+                                                                '<span class="image-preview-input-title">Browse</span>'+
+                                                                '<input id="comment_image_'+data.id+'" type="file" accept="image/png, image/jpeg, image/gif" name=""/>'+
+                                                            '</div>'+
+                                                        '</span>'+
+                                                    '</div>'+
                                                 '</div>'+
                                             '</div>'+
+                                        '</form>'+
+                                        '<div class="comment_all_container col-xs-12 " style="margin-top: 10px">'+
                                         '</div>'+
-                                    '</form>'+
+                                    '</div>'+
                                 '</div>'+
                             '</div>'+
                         '</div>'+

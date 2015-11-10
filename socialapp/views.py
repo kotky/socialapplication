@@ -218,18 +218,18 @@ def send_message(request):
 def publish_post(request):
     client = Client("http://127.0.0.1:8080/publish")
     post = Posts(user=request.user, date_created = datetime.now(), text=request.POST["text"])
-    post_image_url = ""
+    post_image = ""
     if len(request.FILES) > 0:
         post.image = request.FILES["image"]
         post.save()
-        post_image_url = post.image.url
+        post_image = post.image.url
     else:
         post.save()
     recieptant_list = SocialUser.objects.get(user=request.user).friends.distinct()
     print recieptant_list
     for user in recieptant_list:
-        result = client.publish("User_"+str(user.id), {"event":"post_added","data":{"type": "post", "creator_id":request.user.id, "creator_username":request.user.username, "text":post.text, "id":post.id, "date_created":datetime_to_ms_str(post.date_created), "image_url": post_image_url}})
-    result = client.publish("User_"+str(request.user.id),  {"event":"post_added","data":{"type": "post", "creator_id":request.user.id, "creator_username":request.user.username, "text":post.text, "id":post.id, "date_created":datetime_to_ms_str(post.date_created), "image_url": post_image_url}})
+        result = client.publish("User_"+str(user.id), {"event":"post_added","data":{"type": "post", "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created),"date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
+    result = client.publish("User_"+str(request.user.id), {"event":"post_added","data":{"type": "post", "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created),"date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
     return JsonResponse({"status":"post_added","id":post.id})
 
 def publish_comment(request):
@@ -247,7 +247,7 @@ def publish_comment(request):
     for user in recieptant_list:
         result = client.publish("User_"+str(user.id), {"event":"post_added","data":{"type": "comment","post_id":request.POST["post_id"], "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created), "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
     result = client.publish("User_"+str(request.user.id),  {"event":"post_added","data":{"type": "comment","post_id":request.POST["post_id"], "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created), "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
-    return JsonResponse({"status":"comment_added","id":post.id})
+    return JsonResponse({"status":"comment_added","id":request.POST["post_id"]})
 
 def logout_user(request):
     if request.user.is_authenticated():
