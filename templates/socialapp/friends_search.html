@@ -35,11 +35,11 @@
                         </p>
                         <div class="btn-group">
                             {% if user.allredy_friend == 0 %}
-                                <button type="button" class="btn btn-primary add_friend" data-url="/friends/add/{{ user.user_id }}">
+                                <button type="button" class="btn btn-primary add_friend" data-url="/friends/add/{{ user.user_id }}/">
                                     Add as friend!
                                 </button>
                             {% else %}
-                                <button type="button" class="btn btn-primary btn-success add_friend" data-url="/friends/remove/{{ user.user_id }}">
+                                <button type="button" class="btn btn-primary btn-success add_friend" data-url="/friends/remove/{{ user.user_id }}/">
                                     Unfriend friend!
                                 </button>
                             {% endif %}

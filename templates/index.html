@@ -1,50 +1,50 @@
-{% extends "base.html" %}
+{% extends "generic/generic_base.html" %}
 {% load i18n %}
 
 {% block controls %}
     {% if user.is_authenticated %}
         <div id="main_post_container" class="container-fluid">
             <form method="post" action="/send/post/" class="form-horizontal" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="row">
-            <div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
-                <div class="input-group">
-                    <input id="post_text" name="post_text" class="form-control" placeholder="" type="text" required>
-                    <span class="input-group-btn">
-                        <div class="btn btn-default image-select-upload" data-toggle="collapse" data-target="#image_upload_wrapper">
-                            <span class="glyphicon glyphicon-picture"></span>
-                            <span class="image-select">Add Image!</span>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
+                        <div class="input-group">
+                            <input id="post_text" name="post_text" class="form-control" placeholder="" type="text" required>
+                            <span class="input-group-btn">
+                                <div class="btn btn-default image-select-upload" data-toggle="collapse" data-target="#image_upload_wrapper">
+                                    <span class="glyphicon glyphicon-picture"></span>
+                                    <span class="image-select">Add Image!</span>
+                                </div>
+                                <div class="btn btn-default upload_post">
+                                    <span class="glyphicon glyphicon-upload"></span>
+                                    <span >Post It!</span>
+                                </div>
+                            </span>
                         </div>
-                        <div class="btn btn-default upload_post">
-                            <span class="glyphicon glyphicon-upload"></span>
-                            <span >Post It!</span>
-                        </div>
-                    </span>
+                    </div>
                 </div>
-            </div>
-            </div>
-            <div class="row">
-            <div id="image_upload_wrapper" class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 collapse">
-                <!-- image-preview-filename input [CUT FROM HERE]-->
-                <div class="input-group image-preview">
-                    <input type="text" class="form-control image-preview-filename" disabled="disabled">
-                    <!-- don't give a name === doesn't send on POST/GET -->
-                    <span class="input-group-btn">
-                        <!-- image-preview-clear button -->
-                        <button type="button" class="btn btn-default image-preview-clear" style="display:none;">
-                            <span class="glyphicon glyphicon-remove"></span> Clear
-                        </button>
-                        <!-- image-preview-input -->
-                        <div class="btn btn-default image-preview-input">
-                            <span class="glyphicon glyphicon-folder-open"></span>
-                            <span class="image-preview-input-title">Browse</span>
-                            <input type="file" id="post_upload_input" accept="image/png, image/jpeg, image/gif" name="input-file-preview"/>
-                            <!-- rename it -->
+                <div class="row">
+                    <div id="image_upload_wrapper" class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 collapse">
+                        <!-- image-preview-filename input [CUT FROM HERE]-->
+                        <div class="input-group image-preview">
+                            <input type="text" class="form-control image-preview-filename" disabled="disabled">
+                            <!-- don't give a name === doesn't send on POST/GET -->
+                            <span class="input-group-btn">
+                                <!-- image-preview-clear button -->
+                                <button type="button" class="btn btn-default image-preview-clear" style="display:none;">
+                                    <span class="glyphicon glyphicon-remove"></span> Clear
+                                </button>
+                                <!-- image-preview-input -->
+                                <div class="btn btn-default image-preview-input">
+                                    <span class="glyphicon glyphicon-folder-open"></span>
+                                    <span class="image-preview-input-title">Browse</span>
+                                    <input type="file" id="post_upload_input" accept="image/png, image/jpeg, image/gif" name="input-file-preview"/>
+                                    <!-- rename it -->
+                                </div>
+                            </span>
                         </div>
-                    </span>
+                    </div>
                 </div>
-            </div>
-            </div>
             </form>
 
             {% for post in posts %}
@@ -55,18 +55,18 @@
                                 <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ post.creator_username }}: </p>
                                 <p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">{{ post.text }}</p>
                             {% if post.creator_id == user.user_id %}
-                                <div class="btn btn-default pull-right margin-left-5px remove_button" data-url="/remove/post/{{ post.id }}">
+                                <div class="btn btn-default pull-right margin-left-5px remove_button" data-url="/remove/post/{{ post.id }}/">
                                     <span class="glyphicon glyphicon-remove-circle"></span>
                                     <span>Remove</span>
                                 </div>
                             {% endif %}
                             {% if post.liked_alredy %}
-                                <div class="btn btn-default pull-right margin-left-5px like_button btn-success " data-url="/unlike/post/{{ post.id }}">
+                                <div class="btn btn-default pull-right margin-left-5px like_button btn-success " data-url="/unlike/post/{{ post.id }}/">
                                     <span class="glyphicon glyphicon-thumbs-up"></span>
                                     <span>Like</span>
                                 </div>
                             {% else %}
-                                <div class="btn btn-default pull-right margin-left-5px like_button" data-url="/like/post/{{ post.id }}">
+                                <div class="btn btn-default pull-right margin-left-5px like_button" data-url="/like/post/{{ post.id }}/">
                                     <span class="glyphicon glyphicon-thumbs-up"></span>
                                     <span>Like</span>
                                 </div>

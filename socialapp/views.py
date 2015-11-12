@@ -35,7 +35,7 @@ def index(request):
             else:
                 post_dict["post_"+str(post.parent.id)]["comments"].append({"id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url, "text":post.text,"image":post_image,"likes_count":len(post_likes), "liked_alredy":liked_alredy, "date_created_ms": datetime_to_ms_str(post.date_created), "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")})
     #print sorted(post_dict.values(), key=lambda k: k['post_date_created'], reverse=True)
-    return render(request, 'index.html', {'user':{'is_authenticated':isAuth, 'username':username, "user_id":request.user.id}, "posts":sorted(post_dict.values(), key=lambda k: k['date_created'], reverse=True)})
+    return render(request, 'index.html', {'user':{'is_authenticated':isAuth, 'username':username, "user_id":request.user.id}, "posts":sorted(post_dict.values(), key=lambda k: k['date_created_ms'], reverse=True)})
 
 def remove_post(request):
     post_id = request.POST["post_id"]

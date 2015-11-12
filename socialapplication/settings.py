@@ -25,6 +25,7 @@ SECRET_KEY = '&2b-^yo&ke_3qprd__x-u+%!$xtrv3!l48f2ta47-gen$cx$&1'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = []
 
 
@@ -58,8 +59,7 @@ ROOT_URLCONF = 'socialapplication.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,6 +68,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.core.context_processors.media',
+                'django.template.context_processors.debug',
             ],
         },
     },

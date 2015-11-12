@@ -21,6 +21,8 @@ window.addEventListener("load", function() {
 });
 */
 _baseUrl = "http://127.0.0.1:8000";
+
+
 _file_options = {
         url: "",
         data: "",
@@ -30,23 +32,24 @@ _file_options = {
         contentType: false // Set content type to false as jQuery will tell the server its a query string request
 
     };
+
 _text_options = {
         url: "",
         data: "",
+        type: "POST",
         dataType: "json"
 };
-$(document).on('click', '#close-preview', function(){
-    $('.image-preview').popover('hide');
-    // Hover befor close the preview
-    $('.image-preview').hover(
-        function () {
-           $('.image-preview').popover('show');
-        },
-         function () {
-           $('.image-preview').popover('hide');
-        }
-    );
-});
+
+function GetCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+    }
+    return "";
+}
 
 $(function() {
     _baseUrl = location.origin;
@@ -57,6 +60,18 @@ $(function() {
 });
 ImagePreviewPostInputInitialize = function()
 {
+    $(document).on('click', '#close-preview', function(){
+        $('.image-preview').popover('hide');
+        // Hover befor close the preview
+        $('.image-preview').hover(
+            function () {
+               $('.image-preview').popover('show');
+            },
+             function () {
+               $('.image-preview').popover('hide');
+            }
+        );
+    });
      // Create the close button
     var closebtn = $('<button/>', {
         type:"button",
@@ -203,28 +218,32 @@ WebSocketEventParser = function(data)
         view_data = recived_data.data;
         if (view_data.type=="post")
         {
-            if($("#main_post_container").find(".post_container").length>0)
+            var allPosts = $("#main_post_container").find(".post_container");
+            if(allPosts.length>0)
             {
-                $("#main_post_container").find(".post_container").each(function(index, value)
+                allPosts.each(function(index, value)
                 {
-                    if (parseFloat($(value).attr("data-date-created"))<parseFloat(view_data.date_created_ms))
+                    if (parseFloat($(value).attr("data-date-created"))<parseFloat(view_data.date_created_ms) || (index == allPosts.length-1))
                     {
-                        postHtml = GeneratePostHtml(view_data);
-                        $(postHtml).insertBefore(value);
+                        //postHtml = GeneratePostHtml(view_data);
+                        //$(postHtml).insertBefore(value);
+
+                         $(Templates.post(view_data)).insertBefore(value);
+
                         return false;
                     }
                 })
             }
             else
             {
-                $("#main_post_container").append(GeneratePostHtml(view_data));
+                $("#main_post_container").append(Templates.post(view_data));
             }
 
         }
         else if (view_data.type=="comment")
         {
             console.log(view_data)
-            allPosts = $("#main_post_container").find("#post_"+view_data.post_id).find(".comment_all_container").find(".comment_wrapper")
+            var allPosts = $("#main_post_container").find("#post_"+view_data.post_id).find(".comment_all_container").find(".comment_wrapper")
             if (allPosts.length>0)
             {
                 allPosts.each(function(index, value)
@@ -232,8 +251,12 @@ WebSocketEventParser = function(data)
                     console.log(value)
                     if (parseFloat($(value).attr("data-date-created"))>parseFloat(view_data.date_created_ms) || (index == allPosts.length-1))
                     {
-                        postHtml = GenerateCommentHtml(view_data);
-                        $(postHtml).insertAfter(value);
+
+                        //postHtml = GenerateCommentHtml(view_data);
+                        //$(postHtml).insertAfter(value);
+
+                        $(Templates.comment(view_data)).insertAfter(value);
+
                         return false;
                     }
                 })
@@ -241,7 +264,7 @@ WebSocketEventParser = function(data)
             else
             {
                 console.log(view_data);
-                $("#main_post_container").find("#post_"+view_data.post_id).find(".comment_all_container").append(GenerateCommentHtml(view_data))
+                $("#main_post_container").find("#post_"+view_data.post_id).find(".comment_all_container").append(Templates.comment(view_data))
             }
 
         }
@@ -309,6 +332,7 @@ AjaxCaller = function(url, data, options, callback)
 {
     options.url =url;
     options.data = data;
+    options.headers = { 'X-CSRFToken': GetCookie("csrftoken") };
     $.ajax(options)
     .done(function(data) {
       callback(data)
@@ -317,122 +341,44 @@ AjaxCaller = function(url, data, options, callback)
       alert("Ajax failed to fetch data")
     })
 }
-GeneratePostHtml = function(data)
-{
-    var return_html = '<div class="row post_container" id="post_'+data.id+'" data-date-created="'+data.date_created_ms+'">'+
-                    '<div class="col-xs-12 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">'+
-                        '<div class="img-rounded panel panel-info">'+
-                            '<div class="text-left panel-heading">'+
-                                '<p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">'+data.creator_username+': </p>'+
-                                '<p class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block">'+data.text+'</p>';
-
-                            if (data.creator_id == $("#user_data").attr("data-userId"))
-                            {
-                                return_html += '<div class="btn btn-default pull-right margin-left-5px remove_button" data-url="/remove/post/'+data.id+'">'+
-                                    '<span class="glyphicon glyphicon-remove-circle"></span>'+
-                                    '<span>Remove</span>'+
-                                '</div>';
-                            }
-
-                                return_html += '<div class="btn btn-default pull-right margin-left-5px like_button" data-url="/like/post/'+data.id+'">'+
-                                    '<span class="glyphicon glyphicon-thumbs-up"></span>'+
-                                    '<span>Like</span>'+
-                                '</div>'+
-                                '<div class="visible-xs-inline-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block pull-right margin-left-5px like_count">0</div>'+
-                            '</div>';
-                            if (data.image != "")
-                            {
-                                return_html += '<div class="panel-body">'+
-                                    '<a href="'+data.image+'" class="thumbnail">'+
-                                        '<img src="'+data.image+'" alt="'+data.image+'" class="img-responsive img-rounded">'+
-                                    '</a>'+
-                                 '</div>';
-                            }
-                            return_html += '<div class="panel-footer ">'+
-                                '<div class="btn btn-default pull-right" data-toggle="collapse" data-target="#comment_wrapper_'+data.id+'">'+
-                                    '<span class="glyphicon glyphicon-comment"></span>'+
-                                    '<span>Comment!</span>'+
-                                '</div>'+
-                                '<div class="row">'+
-                                    '<div class="col-xs-12 col-sm-10 col-sm-offset-1 collapse" id="comment_wrapper_'+data.id+'" style="margin-top: 10px;">'+
-                                        '<form method="post" class="form-horizontal" enctype="multipart/form-data">'+
-                                            '<div class="col-xs-12">'+
-                                                '<div class="input-group">'+
-                                                    '<input id="comment_text_'+data.id+'" name="comment_text" class="form-control" placeholder="" type="text" required>'+
-                                                    '<span class="input-group-btn">'+
-                                                        '<div class="btn btn-default image-select-upload" data-toggle="collapse" data-target="#image_upload_wrapper_'+data.id+'">'+
-                                                            '<span class="glyphicon glyphicon-picture"></span>'+
-                                                            '<span class="image-select">Add Image!</span>'+
-                                                        '</div>'+
-                                                        '<div class="btn btn-default upload_comment" data-url="/send/comment/">'+
-                                                            '<span class="glyphicon glyphicon-upload"></span>'+
-                                                            '<span>Post It!</span>'+
-                                                        '</div>'+
-                                                    '</span>'+
-                                                '</div>'+
-                                            '</div>'+
-                                            '<div class="col-xs-12">'+
-                                                '<div id="image_upload_wrapper_'+data.id+'"collapse">'+
-                                                    '<div class="input-group image-preview">'+
-                                                        '<input type="text" class="form-control image-preview-filename" disabled="disabled">'+
-                                                        '<span class="input-group-btn">'+
-                                                            '<button type="button" class="btn btn-default image-preview-clear" style="display:none;">'+
-                                                                '<span class="glyphicon glyphicon-remove"></span> Clear'+
-                                                            '</button>'+
-                                                            '<div class="btn btn-default image-preview-input">'+
-                                                                '<span class="glyphicon glyphicon-folder-open"></span>'+
-                                                                '<span class="image-preview-input-title">Browse</span>'+
-                                                                '<input id="comment_image_'+data.id+'" type="file" accept="image/png, image/jpeg, image/gif" name=""/>'+
-                                                            '</div>'+
-                                                        '</span>'+
-                                                    '</div>'+
-                                                '</div>'+
-                                            '</div>'+
-                                        '</form>'+
-                                        '<div class="comment_all_container col-xs-12 " style="margin-top: 10px">'+
-                                        '</div>'+
-                                    '</div>'+
-                                '</div>'+
-                            '</div>'+
-                        '</div>'+
-                    '</div>'+
-                '</div>';
-    return return_html;
+Templates = {
+    post : function(data)
+    {
+        //_.templateSettings = { interpolate: /\{\{(.+?)\}\}/g }; // da bude teplate sa dvostrukim viticastim kao u djangu
+        console.log("popunjavam post");
+        var user_id = $("#user_data").attr("data-userId");
+        data.user_id = user_id;
+        data.csrftoken = GetCookie("csrftoken");
+        var template_post = $("#post_template_data").html();
+        var template = _.template(template_post );
+        var populated_template = template(data);
+        console.log(populated_template);
+        return populated_template
+    },
+    comment : function(data)
+    {
+        //_.templateSettings = { interpolate: /\{\{(.+?)\}\}/g }; // da bude teplate sa dvostrukim viticastim kao u djangu
+        console.log("popunjavam comment");
+        var user_id = $("#user_data").attr("data-userId");
+        data.user_id = user_id;
+        data.csrftoken = GetCookie("csrftoken");
+        var template_post = $("#comment_template_data").html();
+        var template = _.template(template_post );
+        var populated_template = template(data);
+        console.log(populated_template);
+        return populated_template
+    }
 }
-GenerateCommentHtml = function(data)
+
+Search = function(ajaxData, timeoutMs )
 {
-    var return_html = '<article class="row comment_wrapper" data-date-created="'+data.date_created_ms+'">'
-                        if (data.creator_id == $("#user_data").attr("data-userId"))
-                            return_html += '<div class="col-md-2 col-sm-2 hidden-xs ">'
-                        else
-                            return_html += '<div class="col-md-2 col-sm-2 hidden-xs pull-right">'
-                        return_html += '<figure class="thumbnail">'+
-                                '<img class="img-responsive" src="'+data.creator_image +'" />'+
-                                '<figcaption class="text-center">'+data.creator_username +'</figcaption>'+
-                              '</figure>'+
-                            '</div>'+
-                            '<div class="col-xs-12 col-sm-10">'+
-                              '<div class="panel panel-default arrow left">'+
-                                '<div class="panel-body">'+
-                                  '<header class="text-left">'+
-                                    '<div class="comment-user pull-left"><i class="fa fa-user"></i> '+data.creator_username +'</div>'+
-                                    '<time class="comment-date pull-right" datetime="'+data.date_created+'"><i class="fa fa-clock-o"></i>'+data.date_created+'</time>'+
-                                  '</header>'+
-                                  '<div class="comment-post">'+
-                                  '<hr>'+
-                                    '<p>'+ data.text +'</p>';
-                                    if (data.image != "")
-                                    {
-                                      return_html += '<div class="">'+
-                                            '<a href="'+data.image +'" class="thumbnail">'+
-                                                '<img src="'+data.image+'" alt="'+ data.image +'" class="img-responsive img-rounded">'+
-                                            '</a>'+
-                                         '</div>';
-                                    }
-                                  return_html += '</div>'+
-                                '</div>'+
-                              '</div>'+
-                            '</div>'+
-                          '</article>';
-    return return_html;
+    if (this.liveSearchTimer)
+    {
+        clearTimeout(this.liveSearchTimer);
+    }
+
+    this.liveSearchTimer = setTimeout(function ()
+    {
+        AjaxCaller(ajaxData.url, ajaxData.data, ajaxData.options, ajaxData.callback);
+    }, timeoutMs);
 }
