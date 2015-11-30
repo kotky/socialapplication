@@ -149,7 +149,6 @@ SetAjaxEvents = function()
                 form_data.append("image", undefined);
              form_data.append("post_id", post_id);
              form_data.append("user_id", user_id);
-             form_data.append("csrfmiddlewaretoken",$("input[name='csrfmiddlewaretoken']").val())
              AjaxCaller(url,form_data, _file_options, AddCommentOrPost );
          }
     });
@@ -167,10 +166,29 @@ SetAjaxEvents = function()
                 form_data.append("image", image_file[0]);
              else
                 form_data.append("image", undefined);
-             form_data.append("csrfmiddlewaretoken",$(this).parents("form").find("input[name='csrfmiddlewaretoken']").val())
              form_data.append("user_id", user_id);
              AjaxCaller(url,form_data,_file_options,AddCommentOrPost );
          }
+    });
+    $(document).on("click", ".clear-friends", function(event){
+         $("#text_search").val("");
+         $("#text_search").trigger("keyup");
+    });
+    $(document).on("keyup", "#text_search", function(event){
+        ajaxData = {};
+        ajaxData.data = {user_id:parseInt($("#user_data").attr("data-userId")), search_text: $(this).val()};
+        ajaxData.url = _baseUrl+$(this).attr("data-url");
+        ajaxData.options = _text_options
+        ajaxData.callback = FriendSearchPopulate
+        Search(ajaxData, 500);
+    });
+}
+FriendSearchPopulate = function (data) {
+    var friend_container =  $("#friend_search_container").find(".friend_container");
+    friend_container.empty();
+    data.list.forEach(function(element, index, array)
+    {
+        friend_container.append(Templates.friend(element));
     });
 }
 SetWebSockets = function()
@@ -344,11 +362,9 @@ AjaxCaller = function(url, data, options, callback)
 Templates = {
     post : function(data)
     {
-        //_.templateSettings = { interpolate: /\{\{(.+?)\}\}/g }; // da bude teplate sa dvostrukim viticastim kao u djangu
         console.log("popunjavam post");
         var user_id = $("#user_data").attr("data-userId");
         data.user_id = user_id;
-        data.csrftoken = GetCookie("csrftoken");
         var template_post = $("#post_template_data").html();
         var template = _.template(template_post );
         var populated_template = template(data);
@@ -357,15 +373,20 @@ Templates = {
     },
     comment : function(data)
     {
-        //_.templateSettings = { interpolate: /\{\{(.+?)\}\}/g }; // da bude teplate sa dvostrukim viticastim kao u djangu
         console.log("popunjavam comment");
         var user_id = $("#user_data").attr("data-userId");
         data.user_id = user_id;
-        data.csrftoken = GetCookie("csrftoken");
         var template_post = $("#comment_template_data").html();
         var template = _.template(template_post );
         var populated_template = template(data);
         console.log(populated_template);
+        return populated_template
+    },
+    friend: function(data)
+    {
+        var template_friend = $("#friend_template_data").html();
+        var template = _.template(template_friend );
+        var populated_template = template(data);
         return populated_template
     }
 }

@@ -120,3 +120,7 @@ EMAIL_HOST_USER = 'smartsystemsdd@gmail.com'
 EMAIL_HOST_PASSWORD = 'maxflexo616043'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+# my variables (settings)
+FRIEND_PAGE_COUNT_LIMIT = 12
+POST_PAGE_COUNT_LIMIT = 0

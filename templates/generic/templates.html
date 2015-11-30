@@ -113,4 +113,37 @@
         </div>
     </article>
 </script>
+
+<script type="text/x-underscore" id="friend_template_data">
+    <div class="col-xs-12 col-sm-6 col-md-3 friend_main_wrapper" id="friend_<%= user_id %>">
+        <div class="well well-sm">
+            <div class="row" >
+                <div class="col-xs-12 col-sm-6 col-md-5">
+                    <img src="<%= user_avatar %>" alt="" class="img-rounded img-responsive" />
+                </div>
+                <div class="col-xs-12 col-sm-6 col-md-7">
+                    <h4>
+                        <%= user_username %></h4>
+                    <div>
+                        <i class="glyphicon glyphicon-user"></i><%= user_first_name %> <%= user_last_name %>
+                        <br />
+                        <i class="glyphicon glyphicon-envelope"></i><%= user_email %>
+                        <br />
+                    </div>
+                    <div class="btn-group">
+                        <% if (allredy_friend == 0){ %>
+                            <button type="button" class="btn btn-primary add_friend" data-url="/friends/add/<%= user_id %>/">
+                                Add as friend!
+                            </button>
+                        <% } else { %>
+                            <button type="button" class="btn btn-primary btn-success add_friend" data-url="/friends/remove/<%= user_id %>/">
+                                Unfriend friend!
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
 {% endblock %}

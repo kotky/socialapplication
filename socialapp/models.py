@@ -5,30 +5,26 @@ from datetime import datetime
 class SocialUser(models.Model):
     user = models.OneToOneField(User,related_name='%(app_label)s_%(class)s_user', primary_key=True)
     image = models.ImageField(upload_to='avatar', default = 'avatar/icon-user-default.png')
-    phone = models.CharField(max_length=30)
-    friends = models.ManyToManyField(User,related_name='%(app_label)s_%(class)s_friend')
+    phone = models.CharField(max_length=30, null=True, blank = True)
+    friends = models.ManyToManyField(User,related_name='%(app_label)s_%(class)s_friends')
     def __unicode__(self):              # __unicode__ on Python 2
         return self.user.username
     def delete(self, *args, **kwargs):
         if self.image.url != '/media/avatar/icon-user-default.png':
             self.image.delete()
         super(SocialUser, self).delete(*args, **kwargs)
-#user.pic.url
 
 class Chats(models.Model):
     creator = models.ForeignKey(User, related_name='%(app_label)s_%(class)s_user')
     date_created = models.DateTimeField('date and time created')
     title = models.CharField(max_length=200)
     last_modified = models.DateTimeField('date and time modified')
+    users = models.ManyToManyField(User,related_name='%(app_label)s_%(class)s_users')
     def __unicode__(self):              # __unicode__ on Python 2
         return self.title
 
 class DataTypes(models.Model):
     type_name = models.CharField(max_length=30)
-
-class ChatsUsers(models.Model):
-    chat = models.ForeignKey(Chats)
-    user = models.ForeignKey(User)
 
 class ChatMessages(models.Model):
     text = models.CharField(max_length=1024)

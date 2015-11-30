@@ -2,13 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, views, login
-from socialapp.models import SocialUser, Chats, ChatsUsers, ChatMessages, Posts, Likes
+from socialapp.models import SocialUser, Chats, ChatMessages, Posts, Likes
 from socialapp.forms import RegistrationFormUser, RegistrationFormSocialUser, LoginForm
 from django.db.models import Q
 from django.core.mail import send_mail
-from datetime import datetime, timedelta
+from datetime import datetime
 from crossbarhttp import *
 from time import mktime
+from django.conf import settings
 
 def datetime_to_ms_str(dt):
     return str(mktime(dt.timetuple()))
@@ -31,11 +32,17 @@ def index(request):
             if post.image:
                 post_image = post.image.url
             if post.parent is None:
-                post_dict["post_"+str(post.id)]={"id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "text":post.text,"image":post_image,"likes_count":len(post_likes), "liked_alredy":liked_alredy, "comments":[], "date_created_ms": datetime_to_ms_str(post.date_created),"date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}
+                post_dict["post_"+str(post.id)]={"id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "text":post.text,"image":post_image,
+                                                "likes_count":len(post_likes), "liked_alredy":liked_alredy, "comments":[], "date_created_ms": datetime_to_ms_str(post.date_created),
+                                                "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}
             else:
-                post_dict["post_"+str(post.parent.id)]["comments"].append({"id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url, "text":post.text,"image":post_image,"likes_count":len(post_likes), "liked_alredy":liked_alredy, "date_created_ms": datetime_to_ms_str(post.date_created), "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")})
+                post_dict["post_"+str(post.parent.id)]["comments"].append({"id":post.id,"creator_id":post.user.id, "creator_username":post.user.username,
+                                                                           "creator_image":SocialUser.objects.get(user=post.user).image.url, "text":post.text,"image":post_image,
+                                                                           "likes_count":len(post_likes), "liked_alredy":liked_alredy, "date_created_ms": datetime_to_ms_str(post.date_created),
+                                                                           "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")})
     #print sorted(post_dict.values(), key=lambda k: k['post_date_created'], reverse=True)
-    return render(request, 'index.html', {'user':{'is_authenticated':isAuth, 'username':username, "user_id":request.user.id}, "posts":sorted(post_dict.values(), key=lambda k: k['date_created_ms'], reverse=True)})
+    return render(request, 'index.html', {'user':{'is_authenticated':isAuth, 'username':username, "user_id":request.user.id},
+                                          "posts":sorted(post_dict.values(), key=lambda k: k['date_created_ms'], reverse=True)})
 
 def remove_post(request):
     post_id = request.POST["post_id"]
@@ -133,14 +140,31 @@ def remove(request, target, id):
         print "nepoznata naredba"
         return HttpResponseRedirect('/')
 
+def filter_friends(request):
+    if request.POST["search_text"] == "":
+        user_list = SocialUser.objects.all().exclude(user=request.user)
+    else:
+        query = Q()
+        query = Q(user__username__icontains=request.POST["search_text"]) | Q(user__email__icontains=request.POST["search_text"]) | Q(user__first_name__icontains=request.POST["search_text"]) | \
+                Q(user__last_name__icontains=request.POST["search_text"])
+
+        user_list = SocialUser.objects.filter(query).exclude(user = request.user)
+    userList=[]
+    for user in user_list:
+        userList.append({"user_id":user.user.id, "user_first_name":user.user.first_name, "user_last_name": user.user.last_name, "user_username": user.user.username,
+                         "user_email":user.user.email, "user_avatar":user.image.url, "allredy_friend":len(user.friends.filter(id=request.user.id))})
+    return JsonResponse({"status":"filtered_friends","list":userList, "show_count": settings.FRIEND_PAGE_COUNT_LIMIT, "total_count":len(user_list)})
+
+
 def search_friends(request):
     user_list = SocialUser.objects.all().exclude(user=request.user)
     userList=[]
     for user in user_list:
         auth_user = user.user
-        print user.friends.filter(id=request.user.id)
-        userList.append({"user_id":auth_user.id, "user_first_name":auth_user.first_name, "user_last_name": auth_user.last_name, "user_username": auth_user.username, "user_email":auth_user.email, "user_avatar":user.image.url, "allredy_friend":len(user.friends.filter(id=request.user.id))})
-    return render(request, 'socialapp/friends_search.html', {"userList":userList})
+        userList.append({"user_id":auth_user.id, "user_first_name":auth_user.first_name, "user_last_name": auth_user.last_name, "user_username": auth_user.username,
+                         "user_email":auth_user.email, "user_avatar":user.image.url, "allredy_friend":len(user.friends.filter(id=request.user.id))})
+    return render(request, 'socialapp/friends_search.html', {'user':{'is_authenticated':request.user.is_authenticated(), 'username':request.user.username,
+                                                                     "user_id":request.user.id},"userList":userList, "search_url": "/friends/filter/"})
 
 def add_or_remove_friend(request, target, id):
     if target=="add":
@@ -173,7 +197,8 @@ def register(request):
             registrationSocialUser= formSocialUser.save(commit=False)
             registrationSocialUser.user = registrationUser
             registrationSocialUser.save()
-            send_mail("Success registration on Django Social App", "Bravo, login data: username: "+registrationUser.username+", password: "+ password_value, None, [registrationUser.email], fail_silently=False)
+            send_mail("Success registration on Django Social App", "Bravo, login data: username: "+registrationUser.username+", password: "+ password_value, None,
+                      [registrationUser.email], fail_silently=False)
             return render(request, 'index.html')
         else:
             formUser = RegistrationFormUser()
@@ -183,7 +208,7 @@ def register(request):
         formUser = RegistrationFormUser()
         formSocialUser = RegistrationFormSocialUser()
         return render(request, 'registration/registration_form.html', {'formUser':formUser, 'formSocialUser':formSocialUser})
-
+"""
 def create_new_chat(request):
     chat_creator = SocialUser.objects.get(id= request.POST['creator_id'])
     chat_title = request.POST['title']
@@ -214,7 +239,7 @@ def send_message(request):
         result = client.publish(topic="User_"+chat_user.user.id, data={"event":"new_msg","msg_data":{"msg_sender_id":sender.id, "chat_id": chat_user.chat.id, "msg_content": message}})
     chat_message = ChatMessages(text = message, date_pub = datetime.now(), chat = chat, user = sender)
     chat_message.save()
-
+"""
 def publish_post(request):
     client = Client("http://127.0.0.1:8080/publish")
     post = Posts(user=request.user, date_created = datetime.now(), text=request.POST["text"])
@@ -228,8 +253,12 @@ def publish_post(request):
     recieptant_list = SocialUser.objects.get(user=request.user).friends.distinct()
     print recieptant_list
     for user in recieptant_list:
-        result = client.publish("User_"+str(user.id), {"event":"post_added","data":{"type": "post", "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created),"date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
-    result = client.publish("User_"+str(request.user.id), {"event":"post_added","data":{"type": "post", "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created),"date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
+        result = client.publish("User_"+str(user.id), {"event":"post_added","data":{"type": "post", "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username,
+                                                                                    "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created),
+                                                                                    "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
+    result = client.publish("User_"+str(request.user.id),
+                            {"event":"post_added","data":{"type": "post", "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "text":post.text,"image":post_image,
+                                                          "date_created_ms": datetime_to_ms_str(post.date_created),"date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
     return JsonResponse({"status":"post_added","id":post.id})
 
 def publish_comment(request):
@@ -245,8 +274,16 @@ def publish_comment(request):
     recieptant_list = SocialUser.objects.get(user=request.user).friends.distinct()
     print recieptant_list
     for user in recieptant_list:
-        result = client.publish("User_"+str(user.id), {"event":"post_added","data":{"type": "comment","post_id":request.POST["post_id"], "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created), "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
-    result = client.publish("User_"+str(request.user.id),  {"event":"post_added","data":{"type": "comment","post_id":request.POST["post_id"], "id":post.id,"creator_id":post.user.id, "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url, "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created), "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
+        result = client.publish("User_"+str(user.id),
+                                {"event":"post_added","data":{"type": "comment","post_id":request.POST["post_id"], "id":post.id,"creator_id":post.user.id,
+                                                              "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url,
+                                                              "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created),
+                                                              "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
+    result = client.publish("User_"+str(request.user.id),
+                            {"event":"post_added","data":{"type": "comment","post_id":request.POST["post_id"], "id":post.id,"creator_id":post.user.id,
+                                                          "creator_username":post.user.username, "creator_image":SocialUser.objects.get(user=post.user).image.url,
+                                                          "text":post.text,"image":post_image, "date_created_ms": datetime_to_ms_str(post.date_created),
+                                                          "date_created":post.date_created.strftime("%A, %d. %B %Y %H:%M")}})
     return JsonResponse({"status":"comment_added","id":request.POST["post_id"]})
 
 def logout_user(request):
