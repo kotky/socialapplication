@@ -22,7 +22,7 @@ pycparser==2.14
 Pygments==2.0.2
 pyOpenSSL==0.15.1
 PyTrie==0.2
-PyYAML==3.11
+PyYAML==5.4
 requests==2.8.1
 service-identity==14.0.0
 shutilwhich==1.1.0
