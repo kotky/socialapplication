@@ -19,7 +19,7 @@ Pillow==3.0.0
 pyasn1==0.1.9
 pyasn1-modules==0.0.8
 pycparser==2.14
-Pygments==2.0.2
+Pygments==2.7.4
 pyOpenSSL==0.15.1
 PyTrie==0.2
 PyYAML==3.11
