@@ -5,7 +5,7 @@ click==5.1
 crossbar==0.11.1
 crossbarhttp==0.1.2
 cryptography==1.1
-Django==1.8.6
+Django==2.2.24
 django-haystack==2.4.1
 enum34==1.0.4
 idna==2.0
